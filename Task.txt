@@ -2,6 +2,7 @@ Work
 Day 1 :-  (Date:- 4/29/25)
    1 -> Create the transaction and Block Classes and export at  Block.js and Transaction.js From Class Diagram (Faisal)
    2 -> Create Structure of Full Node Class  (Abdullah)
-Task Completed :- 0
-Task Left For Next Day : 2
+Task Completed :- 1
+Task Left For Next Day : 1
+
 
