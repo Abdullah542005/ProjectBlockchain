@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "elliptic": "^6.6.1",
     "ethers": "^6.13.7",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
