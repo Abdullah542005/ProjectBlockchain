@@ -1,3 +1,5 @@
+import connectDataBase from "../Database/DatabaseConnector";
+
 import TransactionsWrapper from "./TransactionsWrapper";
 
 export default class FullNode{
@@ -10,11 +12,14 @@ export default class FullNode{
 
     TransactionsWrapper;   //Wraps all the transaction that are going to be added to the block
 
+    Database;             // Database for Storing Transaction
+
     constructor(nodeBlockchainAddress){
         this.mempool = [];
         this.block = null;
         this.nodeBlockchainAddress = nodeBlockchainAddress;
         this.TransactionsWrapper = new TransactionsWrapper();
+        this.Database = connectDataBase();
     }
 
     addTransactionToMempool(transaction) {   //Adds a transaction  to Mempool
@@ -44,5 +49,7 @@ export default class FullNode{
 
     getAverageGas(){}    //Calculates average gas cost from the mempool
 
+    commitBlock(){       // Store the verified block in the database
+    }
     
 }
