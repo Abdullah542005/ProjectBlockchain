@@ -17,7 +17,7 @@ export default class TransactionsWrapper {
     }
 
     findMerkleRoot(){
-       let hashes = transaction.map(transaction=>ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(transaction))))
+       let hashes = this.Transactions.map(transaction=>ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(transaction))))
        if(hashes.length%2!=0)
           hashes.push(hashes[hashes.length-1])
        while(hashes.length>1){
