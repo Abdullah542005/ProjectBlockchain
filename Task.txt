@@ -6,3 +6,32 @@ Task Completed :- 1
 Task Left For Next Day : 1
 
 
+Day 2:- (Date:- 4/20/25) 
+
+   1  -> (Faisal)
+     Day 1 Task 1 (Remaining from Day 1) + Create a mine function inside the block class that receives merkleRoot hash as a param,
+   combine all the fields of  block class into a string (except currenthash) and then calculate the nonce for which
+   the hash of the block is below a difficulty target, set that as 2n**232n, update the currenthash and return true
+   from the function.
+
+   Install Etherjs using (npm install ethers), import that and use ethers.sha()  to calculate the hash
+
+   you can get hint from this code snippet:-
+
+// import {ethers,toUtf8Bytes} from "ethers"
+//     let Block = { 
+//     nonce:0,
+//     data:"This is a Test Block"
+//}
+// let difficultyTarget = 2n**240n;
+// let hash  = ethers.sha256(toUtf8Bytes(JSON.stringify(Block)))
+// while(BigInt(hash) > difficultyTarget){
+//      Block.nonce++;
+//      hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block)))
+// }
+  
+    Note:- Do not push node_modules to github, use (git add file_name ) sperately for each file
+
+   2 -> (Abdullah) 
+   Create and initialize the databaseconnector, Setup TransactionsWrapper and add calculation of merkleRoot
+   
