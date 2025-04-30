@@ -1,5 +1,11 @@
-class transactions
+export default class transactions
 {
+    transaction_Hash;
+    transaction_Nonce;
+    sender_BlockChain_Address;
+    receiver_BlockChain_Address;
+    value;
+    gas_Fee;
     constructor(transaction_Hash, transaction_Nonce, sender_BlockChain_Address, receiver_BlockChain_Address, value, gas_Fee)
     {
         this.transaction_Hash = transaction_Hash;
