@@ -2,11 +2,11 @@ Work
 Day 1 :-  (Date:- 4/29/25)
    1 -> Create the transaction and Block Classes and export at  Block.js and Transaction.js From Class Diagram (Faisal)
    2 -> Create Structure of Full Node Class  (Abdullah)
-Task Completed :- 2
-Task Left For Next Day : 0
+Task Completed :- 1
+Task Left For Next Day : 1
 
 
-Day 2:- (Date:- 4/30/25) 
+Day 2:- (Date:- 4/20/25) 
 
    1  -> (Faisal)
      Day 1 Task 1 (Remaining from Day 1) + Create a mine function inside the block class that receives merkleRoot hash as a param,
@@ -37,4 +37,50 @@ Day 2:- (Date:- 4/30/25)
    
 
 
-   Hello World
+  Day 3:- (1/5/2025)
+  1 -> ( Faisal ) 
+    getBlock(hash){}    //Query Block Data By its Hash
+
+    getBlock(nonce){}   //Query Block Data By its Nonce
+
+    getTransaction(hash){}   //Query Transaction by its hash
+
+    getTransactions(blockchainAddress){}  //Query all Transactions of a user
+
+   Use The Database Attribute to Query The data, i-e
+   Database.all(`Select * from transaction`, (err,result)=>result) //Return The result from the function
+
+   Database for the Blockchain with the name of Blockchain.db has been created using this sql Query
+   Create Table User (
+     balance double(18,5) not null,
+     blockchainAddress varchar(20) not null unique,
+     nonce integer not null,
+     primary key (blockchainAddress)
+);
+
+create Table Block(
+        currentblockhash varchar(64) not null unique,
+        previousBlockhash varchar(64) not null unique,
+        nonce integer not null,
+        timestamp integer not null,
+        blocknumber integer not null,
+        merkleroot varchar(64) not null unique,
+        primary key (currentblockhash)
+);
+
+Create Table Transactions (
+    blockhash varchar(64) not null,
+    transactionHash varchar(64) unique not null,
+    transactionNonce integer not null,
+    senderBlockchainAddress varchar(20) not null,
+    receiverBlockchainAddress varchar(20) not null,
+    value double not null,
+    gasfee double not null,
+    primary key (transactionHash),
+    foreign key (senderBlockchainAddress) references User(blockchainAddress),
+    foreign key (receiverBlockchainAddress) references User(blockchainAddress),
+    foreign key (blockhash) references Block(blockhash)
+)
+
+   2-> (Abdullah)
+   Complete The Verify Transaction, Block Creation and JSONrpc Module
