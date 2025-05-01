@@ -28,7 +28,6 @@ export default class Block
         blockNonce:this.block_Nonce,
         currentHash:this.current_Block_Hash,
         prevHash:this.previous_Block_Hash,
-        timeStamp:this.time_Stamp
       }
     }
 }
