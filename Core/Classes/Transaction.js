@@ -1,4 +1,4 @@
-export default class transactions
+export default class Transactions
 {
     transaction_Hash;
     transaction_Nonce;
