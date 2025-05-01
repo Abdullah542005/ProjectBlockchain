@@ -1,6 +1,6 @@
 import e from "express";
 
-export default function provideInterface(){
+export default function provideInterface(fnode){
 
     const app  = e();
 
@@ -38,7 +38,7 @@ app.post("/JsonRpc",(req,res)=>{
           break;
 
           case 'sendTransaction':{
-           let [status,message] = fnode.addTransactionToMempool(params[0],params[1],params[2])
+           let {status,message} = fnode.addTransactionToMempool(params[0],params[1],params[2])
            if(!status)
                res.status(400).json({error:message})
            else 

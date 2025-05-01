@@ -2,10 +2,10 @@ import { ethers } from "ethers";
 
 export default class TransactionsWrapper {
 
-    Transactions;
+     Transactions;
 
     constructor(){
-        Transactions  = [];
+        this.Transactions  = [];
     }
 
     add(transaction){
