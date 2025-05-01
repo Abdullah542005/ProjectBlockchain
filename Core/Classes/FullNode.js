@@ -28,11 +28,11 @@ export default class FullNode{
     addTransactionToMempool(transaction, signature, publicKey) {   //Adds a transaction  to Mempool
         if(!this.verifyTransactionSignature(transaction,signature,publicKey))
              return {status:false,message:"Failed, Invalid Transaction Signature"};
-        if(transaction.nonce + 1 != this.getUserTransactionNonce(transaction.sender))
+        if(transaction.nonce != this.getUserTransactionNonce(transaction.sender) + 1)
              return {status:false,message:"Invalid Nonce Or Please Wait for the Previous Transaction To Complete"};
         this.mempool.push(transaction);
         this.mempool = this.mempool.sort((a,b) => b.gasfee - a.gasfee);
-        return {status:true,message:"Transaction SuccessFully added"}
+        return {status:true,message:"Transaction Added To Mempool"}
     }
 
     verifyTransactionSignature(transaction, signature, publicKey){  //Verify a Transaction, is Internal Function
@@ -42,15 +42,23 @@ export default class FullNode{
     }
   
 
-       createNewBlock() {   //Create and mine a New block
+     createNewBlock() {   //Create and mine a New block
        this.transactionsWrapper.clear();   //Clears up the Wrapper
-       const {blockNumber, BlockHash} = this.getLastMinedBlockNonceAndHash();
-       this.block  = new Block(blockNumber,0,BlockHash,Math.floor(Date.now/1000),null);
+       const {BlockNumber, BlockHash} = this.getLastMinedBlockNonceAndHash();
+       this.block  = new Block(BlockNumber,0,BlockHash,Math.floor(Date.now/1000),null);
        for(let i = 0; i < this.mempool.length && i <=10; i++)
-        this.transactionsWrapper.add(this.mempool[i]);   //Copying Transaction from Mempool to Wrapper that will be included in the block
+         this.transactionsWrapper.add(this.mempool[i]);   //Copying Transaction from Mempool to Wrapper that will be included in the block
+       const coinBaseTransaction  = {
+          sender:ethers.ZeroAddress,
+          receiver:this.nodeBlockchainAddress,
+          nonce:0,
+          value:this.transactionsWrapper.totalGas() + 50,
+          gasfee:0
+       }
+       this.transactionsWrapper.add(coinBaseTransaction);
        this.block.mineBlock(this.transactionsWrapper.findMerkleRoot());  // Mine the Block;
        return [this.block, this.transactionsWrapper.Transactions]  //Return the block To Be BroadCasted;
-    } 
+     } 
    
     createMinedBlock(block, transactions){   //Create a Block from Mined Block  Data received by other Full Node
       
@@ -70,11 +78,13 @@ export default class FullNode{
     getUserBalance(blockchainAddress){}
 
     getUserTransactionNonce(blockchainAddress){ //Query transaction nonce of a user
-       const nonce =  this.Database.prepare(`Select nonce As nonce from User Where blockchainAddress <=> ${blockchainAddress}`).get()
-       return nonce.nonce?nonce.nonce:0;
+       const nonce =  this.Database.prepare(`Select nonce As nonce from User Where blockchainAddress = ?`).get(blockchainAddress)
+       return nonce?nonce.nonce:-1;
     } 
 
     getAverageGas(){ //Calculates average gas cost from the mempool
+      if(this.mempool.length == 0)
+            return 0
        let avgGas = 0;
        for(let x in this.mempool)
          avgGas+= x.gasfee;
@@ -88,7 +98,7 @@ export default class FullNode{
           return {BlockNumber:0 , BlockHash:ethers.ZeroHash};  //Incase Of Undefined, It means we have no mined block, so the 
      //hash will the zero Hash and this block is called the Genesis Block
      const hash =  this.Database.prepare(`
-     Select currentblockhash AS Hash from block where blocknumber <=> ${blockNumber.number}   
+     Select currentblockhash AS Hash from block where blocknumber = ${blockNumber.number}   
      `).get();
      return  {BlockNumber:blockNumber,Blockhash:hash.Hash};
     }

@@ -1,4 +1,4 @@
-import {randomBytes,ethers,toUtf8Bytes} from "ethers"
+import { ethers, toUtf8Bytes } from "ethers";
 export default class Block
 {
     block_Number;
@@ -18,12 +18,11 @@ export default class Block
     mineBlock(merkleRoot)
     { 
         let Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce; // Stringify Block Data
-        let difficulty_Target = 2n ** 232n;
+        let difficulty_Target = 2n ** 240n;
         let hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data)));
-        while (BigInt(hash) < difficulty_Target)
+        while (BigInt(hash) > difficulty_Target)
         {
           this.block_Nonce++;
-          console.log(this.block_Nonce);
           Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce; // Stringify Block Data
           hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data)));
         }
@@ -31,7 +30,9 @@ export default class Block
         return true;
     }
 
-    verifyBlock(){         
+    verifyBlock(merkleRoot){         
+       let Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce;
+       return BigInt(ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data))) < 2n ** 240n);
     }
 
     toObject(){
@@ -43,8 +44,3 @@ export default class Block
       }
     }
 }
-
-//Testing
-let bock = new Block(1, 0, 0, (Math.floor(Date.now() / 1000)), 0);
-bock.mineBlock(randomBytes(32));
-console.log(bock.current_Block_Hash);

@@ -1,17 +1,17 @@
-import e from "express";
+import express from "express";
 
 export default function provideInterface(fnode){
 
-    const app  = e();
+    const app  = express();
 
-    app.use(e.json);
+    app.use(express.json());
 
-    app.listen(3000);
-  
-app.post("/JsonRpc",(req,res)=>{
+    app.listen(4000);
+
+    app.post("/JsonRpc",(req,res)=>{
 
       const { method,params}  = req.body;
-
+       
       switch(method){
           case 'getBlockByHash':
             res.json(fnode.getBlockByHash(params))
