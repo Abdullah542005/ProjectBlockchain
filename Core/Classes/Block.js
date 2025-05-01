@@ -1,4 +1,4 @@
-
+import {randomBytes,ethers,toUtf8Bytes} from "ethers"
 export default class Block
 {
     block_Number;
@@ -6,7 +6,7 @@ export default class Block
     current_Block_Hash;
     previous_Block_Hash; 
 
-    constructor (block_Number, block_Nonce, previous_Block_Hash,time_Stamp,current_Block_Hash)
+    constructor (block_Number, block_Nonce = 0, previous_Block_Hash, time_Stamp, current_Block_Hash)
     {
         this.block_Number = block_Number;
         this.time_Stamp = time_Stamp;
@@ -15,8 +15,20 @@ export default class Block
         this.previous_Block_Hash = previous_Block_Hash;
     }
 
-    mineBlock(merkleRoot){ 
-
+    mineBlock(merkleRoot)
+    { 
+        let Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce; // Stringify Block Data
+        let difficulty_Target = 2n ** 232n;
+        let hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data)));
+        while (BigInt(hash) < difficulty_Target)
+        {
+          this.block_Nonce++;
+          console.log(this.block_Nonce);
+          Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce; // Stringify Block Data
+          hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data)));
+        }
+        this.current_Block_Hash = hash;
+        return true;
     }
 
     verifyBlock(){         
@@ -31,3 +43,8 @@ export default class Block
       }
     }
 }
+
+//Testing
+let bock = new Block(1, 0, 0, (Math.floor(Date.now() / 1000)), 0);
+bock.mineBlock(randomBytes(32));
+console.log(bock.current_Block_Hash);
