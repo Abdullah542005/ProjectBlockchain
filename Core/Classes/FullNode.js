@@ -68,13 +68,27 @@ export default class FullNode{
     broadcastBlock(p2pNode){   //Broadcast mined block to the network, //Receives Libp2p Class Object
     }
        
-    getBlockByHash(hash){}    //Query Block Data By its Hash
+    getBlockByHash(hash) 
+    {
+      return this.Database.prepare('SELECT * FROM Block WHERE currentblockhash = ?').get(hash);
+    }    //Query Block Data By its Hash
 
-    getBlockByNonce(nonce){}   //Query Block Data By its Nonce
+    getBlockByNonce(nonce)
+    {
+      return this.Database.prepare('SELECT * FROM Block WHERE nonce = ?').get(nonce);
+    }   //Query Block Data By its Nonce
 
-    getTransaction(hash){}   //Query Transaction by its hash
+    getTransaction(hash)
+    {
+      return this.Database.prepare('SELECT * FROM Transactions WHERE transactionHash = ?').get(hash);
+    }   //Query Transaction by its hash
 
-    getUserTransactions(blockchainAddress){}  //Query all Transactions of a user
+    getUserTransactions(blockchainAddress)
+    {
+      return this.Database.prepare(`SELECT * FROM Transactions 
+        WHERE senderBlockchainAddress = ? 
+        OR receiverBlockchainAddress = ?`).all(blockchainAddress, blockchainAddress);
+    }  //Query all Transactions of a user
     
     getUserBalance(blockchainAddress){   //Query Balance of a User
         const balance = this.Database.prepare("Select balance from user where blockchainAddress = ?").get(blockchainAddress)
