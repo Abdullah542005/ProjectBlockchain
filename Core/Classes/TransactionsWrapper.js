@@ -4,8 +4,11 @@ export default class TransactionsWrapper {
 
     Transactions;
 
+    merkleRoot;
+
     constructor(){
         this.Transactions  = [];
+        this.merkleRoot  = null;
     }
 
     add(transaction){
@@ -33,6 +36,7 @@ export default class TransactionsWrapper {
              temp.push(ethers.sha256(ethers.concat([ethers.getBytes(hashes[i]) , ethers.getBytes(hashes[i+1])])))
            hashes = temp;
        }
+       this.merkleRoot = hashes[0];
        return hashes[0];
     }
 
