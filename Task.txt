@@ -84,3 +84,13 @@ Create Table Transactions (
 
    2-> (Abdullah)
    Complete The Verify Transaction, Block Creation and JSONrpc Module
+
+Task Completed: 1
+
+
+Day 4  
+    1 -> (Faisal)
+       Complete Previous Task, Learn how to create p2p network with libp2p library.
+    2 -> (Abdullah) 
+       Complete the commitBlock function  
+Task Completed : 0
