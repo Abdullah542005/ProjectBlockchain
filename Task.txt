@@ -93,4 +93,12 @@ Day 4
        Completed Previous Task, Learn how to create p2p network with libp2p library.
     2 -> (Abdullah) 
        Complete the commitBlock function  
-Task Completed : 1
+Task Completed : 2
+
+Day 5
+   1 - > (Faisal) Test current implemented functionalities of the System, Use ThunderBolt client to send Post Request 
+   To Express Server, Test For Multiple Edge Cases. Add Comments where fixes should be made.
+
+   2 - > (Abdullah) Complete remaining possible functions of full node and create a map for p2pNode module.
+
+Task Completed : 0;
