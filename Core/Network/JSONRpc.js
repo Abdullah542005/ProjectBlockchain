@@ -17,8 +17,8 @@ export default function provideInterface(fnode){
             res.json(fnode.getBlockByHash(params))
           break;
           
-          case 'getBlockByNonce':
-             res.json(fnode.getBlockByNonce(params))
+          case 'getBlockByNumber':
+             res.json(fnode.getBlockByNumber(params))
           break;
           
           case 'getTransaction':

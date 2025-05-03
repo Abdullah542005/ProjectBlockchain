@@ -62,33 +62,40 @@ export default class FullNode{
      } 
    
     createMinedBlock(block, transactions){   //Create a Block from Mined Block  Data received by other Full Node
-      
+      this.block = new Block(block.blockNumber,block.blockNonce,block.prevHash,block.timestamp,block.currentHash);
+      this.transactionsWrapper.clear();
+      for(let x in transactions)
+          this.transactionsWrapper.add(x)
+      if(!block.verifyBlock(this.transactionsWrapper.merkleRoot()))  
+         return {status:false,message:"Invalid Block Received"}
+      this.commitBlock();
+      return {status:true,message:"Block Verified"};
     }
 
     broadcastBlock(p2pNode){   //Broadcast mined block to the network, //Receives Libp2p Class Object
     }
        
-    getBlockByHash(hash) 
+    getBlockByHash(hash)  //Query Block Data By its Hash
     {
       return this.Database.prepare('SELECT * FROM Block WHERE currentblockhash = ?').get(hash);
-    }    //Query Block Data By its Hash
+    }   
 
-    getBlockByNonce(nonce)
+    getBlockByNumber(number) //Query Block Data By its Nonce
     {
-      return this.Database.prepare('SELECT * FROM Block WHERE nonce = ?').get(nonce);
-    }   //Query Block Data By its Nonce
+      return this.Database.prepare('SELECT * FROM Block WHERE blockNumber = ?').get(number);
+    }   
 
-    getTransaction(hash)
+    getTransaction(hash)  //Query Transaction by its hash
     {
       return this.Database.prepare('SELECT * FROM Transactions WHERE transactionHash = ?').get(hash);
-    }   //Query Transaction by its hash
+    }   
 
-    getUserTransactions(blockchainAddress)
+    getUserTransactions(blockchainAddress)  //Query all Transactions of a user
     {
       return this.Database.prepare(`SELECT * FROM Transactions 
         WHERE senderBlockchainAddress = ? 
         OR receiverBlockchainAddress = ?`).all(blockchainAddress, blockchainAddress);
-    }  //Query all Transactions of a user
+    } 
     
     getUserBalance(blockchainAddress){   //Query Balance of a User
         const balance = this.Database.prepare("Select balance from user where blockchainAddress = ?").get(blockchainAddress)
@@ -159,5 +166,6 @@ export default class FullNode{
          !hashes.has(ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(memPoolTransaction))))
       )
 
+      return true;
     }
 }
