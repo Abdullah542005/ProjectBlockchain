@@ -1,0 +1,4 @@
+Performed System Test on 4th of May 2025: 
+   Problems to be solved:
+    1 -> Slowed rpc queries because of mining, need to convert them to async funtions.
+    2 -> Domain provided by local tunnel rate limits ours request, need to find alternative.
