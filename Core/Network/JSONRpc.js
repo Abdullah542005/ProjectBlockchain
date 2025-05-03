@@ -32,6 +32,12 @@ export default function provideInterface(fnode){
           case 'getUserBalance':
             res.json(fnode.getUserBalance(params))
           break;
+
+          /*I think we need to introduce a case with getUserTransactionNonce since it exist in FullNode but not in JSONRpc.js
+          From line 38-40 I believe this code might exist so added it*/
+          case 'getUserTransactionNonce':
+            res.json(fnode.getUserTransactionNonce(params))
+          break;
       
           case 'getAverageGas':
             res.json(fnode.getAverageGas())
