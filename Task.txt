@@ -139,3 +139,5 @@ Function, pass in respective block and it's transactions from the data(received 
 
 
 2 - > (Abdullah) Create and finalize the mechanism for block and transactions propagation across the network.
+
+Task Completed : 1
