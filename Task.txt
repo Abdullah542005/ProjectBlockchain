@@ -102,3 +102,40 @@ Day 5
    2 - > (Abdullah) Complete remaining possible functions of full node and create a map for p2pNode module.
 
 Task Completed : 0;
+
+
+
+Day 6 + 7 
+
+1 -> (Faisal)
+Complete the function named as  toJsonDB(blockNumber)  and fromJsonDB(FullNode Node,data) in the databaseConnector Js module.
+
+The function toJsonDB(blockNumber) receives a blockNumber, fetches all the block's data and it's respective 
+transactions starting from that blockNumber to the latest Block.
+The return object should be like.
+[
+  { 
+ Blockheader:{ currentHash:" ",.......} 
+ Transactions:[
+     {TransactionData#1},
+     {TransactionData#2}...
+  }, 
+ { 
+ Blockheader:{ currentHash:" ",.......} 
+ Transactions:[
+     {sender:" ",receiver:" ", ....},
+     {TransactionData#2}...
+  },
+......... 
+]
+   You can use select query to fetch the blocks with its blockNumber and then it's respective currenthash to fetch all the transactions added in the block.
+
+
+For the function fromJsonDB(node,data)
+For each block and it's transactions in the data array, call the createBlock(block, transactions)
+Function, pass in respective block and it's transactions from the data(received from toJsonDB() function).
+
+// Remember the order of attributes in block and transaction matters should be in the order they are received by their constructor.(i-e Block class constructor)
+
+
+2 - > (Abdullah) Create and finalize the mechanism for block and transactions propagation across the network.
