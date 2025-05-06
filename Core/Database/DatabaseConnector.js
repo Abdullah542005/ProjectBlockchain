@@ -7,7 +7,7 @@ export default function connectDataBase(){
       return db;
 }
 
-function toJsonDB(blockNumber)
+export function toJsonDB(blockNumber)
 {
       let lastBlockNumber = db.prepare('Select max(blockNumber) As number from block').get();
       lastBlockNumber = lastBlockNumber.number;       //Since the query returns an Object {number : xyz} so .number convert it
@@ -21,11 +21,10 @@ function toJsonDB(blockNumber)
             const BlockData = {BlockHeader: block, Transactions: blockTransaction};
             results.push(BlockData);            //Test can remove
       }
-      console.log(results);
       return results;
 }
 
-function fromJsonDB(Node, data)           //Yet to be tested
+export function fromJsonDB(Node, data)     
 {
       for (let i = 0; i < data.length; i++)
       {
@@ -34,7 +33,3 @@ function fromJsonDB(Node, data)           //Yet to be tested
             Node.createMinedBlock(block, transaction);
       }
 }
-
-//Testing portion can remove
-connectDataBase();
-toJsonDB(284);

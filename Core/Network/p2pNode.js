@@ -2,7 +2,7 @@
 import { Server } from "socket.io";
 import { io } from "socket.io-client";
 // import peerList from "./peerList.json" assert { type: 'json' };
-import {toJsonDB, fromJsonDB} from '../Database/DatabaseConnector.js';
+import { fromJsonDB, toJsonDB } from '../Database/DatabaseConnector.js';
 
 export class ServerNode {
 
@@ -69,9 +69,15 @@ export class ClientNode {
   Node;
 
   constructor(url, Node) {
-    this.instance = io(url);
+    this.instance = io(url,{autoConnect:false,reconnectionAttempts:2});
     this.Node = Node;
-    this.instance.on("connect");
+  }
+
+  async connect(){
+    return new Promise((resolve)=>{
+      const timer  = setTimeout(()=>{resolve(false)},10000);
+      this.instance.on("connect",()=>{resolve(true);clearTimeout(timer)});
+    })
   }
 
   addPeer(url){
@@ -88,7 +94,7 @@ export class ClientNode {
    })
   }
 
-  broadCastTransaction(transaction,signature,publicKey){
+ async broadCastTransaction(transaction,signature,publicKey){
      this.instance.emit("broadcastTransaction",[transaction,signature,publicKey]);
   }
 
@@ -113,7 +119,7 @@ export class ClientNode {
   requestData(blockNumber){
      this.instance.emit("RequestData",blockNumber);
      this.instance.once("ReceiveData", (data) => {
-      let receive = new Promise((resolve)=> {
+     let receive = new Promise((resolve)=> {
         this.instance.once("ReceiveData", (data) =>{
           resolve(data);
         })

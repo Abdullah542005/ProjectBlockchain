@@ -15,13 +15,16 @@ export default class FullNode{
 
     bufferReceivedBlock;
 
-    constructor(nodeBlockchainAddress){
+    clientNodes;
+
+    constructor(nodeBlockchainAddress,clientNodes){
         this.mempool = [];
         this.block = null;
         this.nodeBlockchainAddress = nodeBlockchainAddress;
         this.transactionsWrapper = new TransactionsWrapper();
         this.Database = connectDataBase();
         this.bufferReceivedBlock = [];
+        this.clientNodes = clientNodes;
     }
 
     addTransactionToMempool(transaction, signature, publicKey) {   //Adds a transaction  to Mempool
@@ -35,8 +38,46 @@ export default class FullNode{
              return {status:false,message:"Invalid Nonce Or Please Wait for the Previous Transaction To Complete"};
         this.mempool.push(transaction);
         this.mempool = this.mempool.sort((a,b) => b.gasfee - a.gasfee);  //Sort Transaction on Basis of High GasFee
+        this.broadCastTransaction(transaction,signature,publicKey);
         return {status:true,message:"Transaction Added To Mempool"}
     }
+
+    async broadCastTransaction(transaction,signature,publicKey){
+       if(this.clientNodes.length>0)
+          this.clientNodes.forEach((node)=>{
+            node.broadcastTransaction(transaction,signature,publicKey);
+         })
+    }
+
+    async broadCastBlockToNodes(block,transactions) {
+      const confirmationsNeedded = (this.clientNodes.length + 1)/2;
+      let confirmations = 0, rejections = 0;
+  
+      return new Promise((resolve)=>{
+           this.clientNodes.forEach(async (node)=>{
+             node.broadCastBlock(block,transactions).then((data)=>{
+                if(data[0]){
+                      confirmations++;
+                       if(confirmations >= confirmationsNeedded)
+                           resolve([data[0],data[1]]);
+                }
+                else  {
+                     rejections++;  
+                     if((this.clientNodes.length - rejections) < confirmationsNeedded)
+                          resolve([data[0],data[1]]);
+                }
+             });
+           })
+         })
+ }
+
+  async disposeBuffer(blockNumber){
+      this.bufferReceivedBlock.forEach((req)=>{
+            req[2].emit("blockResult",{status:false,message:"synchronize"});
+      })
+  }
+
+
 
     verifyTransactionSignature(transaction, signature, publicKey){  //Verify a Transaction, is Internal Function
          const hash  =  ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(transaction)))
@@ -77,6 +118,7 @@ export default class FullNode{
 
     addToBuffer(block,transactions,socket){
        this.bufferReceivedBlock.push({blockHeader:block,Transactions:[transactions],socket});
+       this.bufferReceivedBlock  = this.bufferReceivedBlock.filter((a,b)=>{b[0].blockNumber - a.blockNumber});
     }
     
     getBlockByHash(hash)  //Query Block Data By its Hash
