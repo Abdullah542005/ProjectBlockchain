@@ -2,6 +2,7 @@
 import { Server } from "socket.io";
 import { io } from "socket.io-client";
 // import peerList from "./peerList.json" assert { type: 'json' };
+import {toJsonDB, fromJsonDB} from '../Database/DatabaseConnector.js';
 
 export class ServerNode {
 
@@ -31,6 +32,8 @@ export class ServerNode {
        })
 
        socket.on("RequestData",(blockNumber)=>{
+          let result = toJsonDB(blockNumber);
+
        })
 
        
@@ -109,5 +112,13 @@ export class ClientNode {
 
   requestData(blockNumber){
      this.instance.emit("RequestData",blockNumber);
+     this.instance.once("ReceiveData", (data) => {
+      let receive = new Promise((resolve)=> {
+        this.instance.once("ReceiveData", (data) =>{
+          resolve(data);
+        })
+      })
+     })
+     fromJsonDB(Node, receive);
   }
 }
