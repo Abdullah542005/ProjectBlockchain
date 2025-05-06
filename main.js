@@ -3,12 +3,11 @@ import FullNode from "./Core/Classes/FullNode.js";
 import provideInterface from "./Core/Network/JSONRpc.js";
 import { ClientNode, ServerNode } from "./Core/Network/p2pNode.js";
 
-
+let clientNodes = [];
 let Node = new FullNode("0x10b800853a93519015d2492f165d4a5c220ccbb5", clientNodes);  //Address that will receive the block reward
 let myDomain  = "http:abdullah.rpc"
-let bootStrapDomain  = "https://three-women-cough.loca.lt:30001/"           //The  PreSet Node Domain that you will connect first to setup your node
+let bootStrapDomain  = "https://swift-birds-punch.loca.lt:3001"           //The  PreSet Node Domain that you will connect first to setup your node
 let myServerNode;
-let clientNodes = [];
 
 provideInterface(Node);         //Starts JSONRpc Interface for Lite Node
 
@@ -30,6 +29,7 @@ async function setP2pNode(){
          if(client.instance.connected)
             clientNodes.push(client);
      }
+     console.log(clientNodes[0].instance.id)
      console.log("Function Completed") 
 }
 
@@ -43,7 +43,7 @@ async function  synchronizeBlockchain(){
     let myLatestBlockNumber  = Node.getLastMinedBlockNonceAndHash()[0]
     if(myLatestBlockNumber != 0)
          myLatestBlockNumber++;
-
+    console.log(latestBlockNumber);
     if(myLatestBlockNumber < latestBlockNumber){ 
        clientNodes[0].requestData(myLatestBlockNumber + 1)
     }
