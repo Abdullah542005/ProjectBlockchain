@@ -13,12 +13,15 @@ export default class FullNode{
     transactionsWrapper;   //Wraps all the transaction that are going to be added to the block
     Database;             // Database for Storing Transaction
 
+    bufferReceivedBlock;
+
     constructor(nodeBlockchainAddress){
         this.mempool = [];
         this.block = null;
         this.nodeBlockchainAddress = nodeBlockchainAddress;
         this.transactionsWrapper = new TransactionsWrapper();
         this.Database = connectDataBase();
+        this.bufferReceivedBlock = [];
     }
 
     addTransactionToMempool(transaction, signature, publicKey) {   //Adds a transaction  to Mempool
@@ -72,9 +75,10 @@ export default class FullNode{
       return {status:true,message:"Block Verified"};
     }
 
-    broadcastBlock(p2pNode){   //Broadcast mined block to the network, //Receives Libp2p Class Object
+    addToBuffer(block,transactions,socket){
+       this.bufferReceivedBlock.push({blockHeader:block,Transactions:[transactions],socket});
     }
-       
+    
     getBlockByHash(hash)  //Query Block Data By its Hash
     {
       return this.Database.prepare('SELECT * FROM Block WHERE currentblockhash = ?').get(hash);
