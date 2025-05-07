@@ -29,7 +29,7 @@ async function setP2pNode(){
          if(client.instance.connected)
             clientNodes.push(client);
      }
-     console.log("Function Completed") 
+     console.log("Function Completed s") // 
 }
 
 
