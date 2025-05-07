@@ -11,6 +11,7 @@ export class ServerNode {
   peerList;
 
   constructor(port,node,bootstrapAddress) {
+    console.log(port)
     this.instance = new Server(port);
     this.Node  = node;
     this.peerList  = [];
@@ -19,7 +20,7 @@ export class ServerNode {
 
   listen() {
     this.instance.on("connection", (socket) => {
-
+      console.log(socket.id)
       socket.on("addPeer",async (peer)=>{
         let list = new Set(this.peerList)
            if(!list.has(peer))
@@ -118,13 +119,11 @@ export class ClientNode {
 
   requestData(blockNumber){
      this.instance.emit("RequestData",blockNumber);
-     this.instance.once("ReceiveData", (data) => {
-     let receive = new Promise((resolve)=> {
-        this.instance.once("ReceiveData", (data) =>{
-          resolve(data);
-        })
-      })
+     return new Promise((resolve)=>{
+       this.instance.once("ReceiveData",(data)=>{
+          fromJsonDB(this.Node,data);
+          resolve();
+       })
      })
-     fromJsonDB(Node, receive);
   }
 }

@@ -110,7 +110,7 @@ export default class FullNode{
       this.transactionsWrapper.clear();
       for(let x in transactions)
           this.transactionsWrapper.add(x)
-      if(!block.verifyBlock(this.transactionsWrapper.merkleRoot()))  
+      if(!block.verifyBlock(this.transactionsWrapper.merkleRoot))  
          return {status:false,message:"Invalid Block Received"}
       this.commitBlock();
       return {status:true,message:"Block Verified"};

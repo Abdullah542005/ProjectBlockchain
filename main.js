@@ -6,14 +6,14 @@ import { ClientNode, ServerNode } from "./Core/Network/p2pNode.js";
 let clientNodes = [];
 let Node = new FullNode("0x10b800853a93519015d2492f165d4a5c220ccbb5", clientNodes);  //Address that will receive the block reward
 let myDomain  = "http:abdullah.rpc"
-let bootStrapDomain  = "https://swift-birds-punch.loca.lt:3001"           //The  PreSet Node Domain that you will connect first to setup your node
+let bootStrapDomain  = ""           //The  PreSet Node Domain that you will connect first to setup your node
 let myServerNode;
 
 provideInterface(Node);         //Starts JSONRpc Interface for Lite Node
 
 async function setP2pNode(){
 
-     myServerNode  =  new ServerNode("3001",Node,bootStrapDomain);
+     myServerNode  =  new ServerNode(3005,Node,bootStrapDomain);
      myServerNode.listen();   //Server Start Listening for Requests
      let client  =  new ClientNode(myServerNode.peerList[0],Node)  //Try to Connect to Bootstrap Node
      await client.connect();
@@ -29,7 +29,6 @@ async function setP2pNode(){
          if(client.instance.connected)
             clientNodes.push(client);
      }
-     console.log(clientNodes[0].instance.id)
      console.log("Function Completed") 
 }
 
@@ -39,13 +38,20 @@ async function setP2pNode(){
 async function  synchronizeBlockchain(){
     if(clientNodes.length == 0)
          return "No Active Node to Synchronize with"
-    let latestBlockNumber  = await clientNodes[0].getLastBlockMined()[0];  //Request the Last Block Mined from The BootStrap Address
+      let blockMine, nodeNumber = 0;
+    for(let i = 0; i < clientNodes.length; i++){    //Ask every node for their last mined block     
+     let latestBlockNumber  = await clientNodes[i].getLastBlockMined()[0];
+     if(latestBlockNumber>blockMine){
+          blockMine  = latestBlockNumber;
+          nodeNumber = i;
+     }
+    }
     let myLatestBlockNumber  = Node.getLastMinedBlockNonceAndHash()[0]
     if(myLatestBlockNumber != 0)
          myLatestBlockNumber++;
-    console.log(latestBlockNumber);
-    if(myLatestBlockNumber < latestBlockNumber){ 
-       clientNodes[0].requestData(myLatestBlockNumber + 1)
+    console.log(blockMine);
+    if(myLatestBlockNumber < blockMine){ 
+       clientNodes[nodeNumber].requestData(myLatestBlockNumber)  //Query Data from the Node having highest block 
     }
     console.log("Function 2 Completed")
 }
@@ -63,8 +69,14 @@ initializeAndStart();
 async function NodeStart(){
  while(true){
 
-   const {block,transactions} = Node.createNewBlock();
-    
+   const [block,transactions] = Node.createNewBlock();
+   console.log(block)
+   if(clientNodes.length == 0){
+     Node.commitBlock()
+     continue;
+   }
+       
+
    if(Node.bufferReceivedBlock.length>0){
         const receiveBlock = Node.bufferReceivedBlock[0];
         if(Node.bufferReceivedBlock[0].blockNumber == block.blockNumber){
@@ -82,7 +94,7 @@ async function NodeStart(){
 
      const {status,message}  = await Node.broadCastBlockToNodes(block, transactions)
      if(status){
-          Node.createMinedBlock(block,transactions)
+          Node.commitBlock();
      }else {
           await synchronizeBlockchain();
      }   
