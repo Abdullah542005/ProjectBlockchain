@@ -11,8 +11,10 @@ export class ServerNode {
   peerList;
 
   constructor(port,node,bootstrapAddress) {
-    console.log(port)
-    this.instance = new Server(port);
+    this.instance = new Server(port,{cors: {
+      origin: "*", 
+      methods: ["GET", "POST"]
+    }});
     this.Node  = node;
     this.peerList  = [];
     this.peerList.push(bootstrapAddress)
@@ -33,9 +35,9 @@ export class ServerNode {
        })
 
        socket.on("RequestData",(blockNumber)=>{
-          let result = toJsonDB(blockNumber);
-
-       })
+        let result = toJsonDB(blockNumber);
+         socket.emit("ReceiveData",JSON.stringify(result, null, 2));
+     })
 
        
       socket.on("broadcastTransaction", (data)=>{
@@ -70,14 +72,18 @@ export class ClientNode {
   Node;
 
   constructor(url, Node) {
-    this.instance = io(url,{autoConnect:false,reconnectionAttempts:2});
+    this.instance = io("https://blockchainmini.loca.lt:3005");
     this.Node = Node;
   }
 
   async connect(){
     return new Promise((resolve)=>{
       const timer  = setTimeout(()=>{resolve(false)},10000);
-      this.instance.on("connect",()=>{resolve(true);clearTimeout(timer)});
+      this.instance.on("connect",()=>{
+        console.log("SuccessFully Connected")
+        resolve(true);clearTimeout(timer)
+       
+      });
     })
   }
 

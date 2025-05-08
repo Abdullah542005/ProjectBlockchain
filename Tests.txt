@@ -2,3 +2,16 @@ Performed System Test on 4th of May 2025:
    Problems to be solved:
     1 -> Slowed rpc queries because of mining, need to convert them to async funtions.
     2 -> Domain provided by local tunnel rate limits ours request, need to find alternative.
+
+
+System Inconsistancies and Problems:
+  
+    Faisal opens his node, abdullah connects after a while, request blockchain through synchronization,
+    gets data successfully, but when abdullah calculates the merkle root for the transaction recieves for block
+    it is change, and hence making the block as invalid.
+
+   Faisal Starts a node and then abdullahs starts after a while, abdullah create a client instance to connect 
+   to Faisal, but Faisal havenot opened a client connection to abdullah,
+   Need to write a function or sort a way in which Faisal node review the peerlist and check weather a peer
+   has added or not.
+

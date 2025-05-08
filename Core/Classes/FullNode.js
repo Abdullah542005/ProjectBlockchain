@@ -108,17 +108,18 @@ export default class FullNode{
     createMinedBlock(block, transactions){   //Create a Block from Mined Block  Data received by other Full Node
       this.block = new Block(block.blockNumber,block.blockNonce,block.prevHash,block.timestamp,block.currentHash);
       this.transactionsWrapper.clear();
-      for(let x in transactions)
+      for(let x of transactions)
           this.transactionsWrapper.add(x)
-      if(!block.verifyBlock(this.transactionsWrapper.merkleRoot))  
+      if(!this.block.verifyBlock(this.transactionsWrapper.merkleRoot))  
          return {status:false,message:"Invalid Block Received"}
       this.commitBlock();
       return {status:true,message:"Block Verified"};
     }
 
     addToBuffer(block,transactions,socket){
+       console.log(block,transactions);
        this.bufferReceivedBlock.push({blockHeader:block,Transactions:[transactions],socket});
-       this.bufferReceivedBlock  = this.bufferReceivedBlock.filter((a,b)=>{b[0].blockNumber - a.blockNumber});
+       this.bufferReceivedBlock  = this.bufferReceivedBlock.filter((a,b)=>{b.blockNumber - a.blockNumber});
     }
     
     getBlockByHash(hash)  //Query Block Data By its Hash

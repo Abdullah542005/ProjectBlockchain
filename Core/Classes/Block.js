@@ -32,9 +32,12 @@ export default class Block
     }
 
     verifyBlock(merkleRoot){         
-       let Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce;
-       return BigInt(ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data))) < 2n ** 240n);
-    }
+      let Block_Data = this.block_Number + this.previous_Block_Hash + this.time_Stamp + merkleRoot + this.block_Nonce;
+     //  console.log(this.toObject())
+
+      const hash  = BigInt(ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data))));
+      return  (hash < 2n ** 236n);
+   }
 
     toObject(){
       return {

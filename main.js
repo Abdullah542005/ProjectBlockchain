@@ -29,7 +29,8 @@ async function setP2pNode(){
          if(client.instance.connected)
             clientNodes.push(client);
      }
-     console.log("Function Completed s") // 
+
+     console.log("Function P2pNode Completed") // 
 }
 
 
@@ -49,31 +50,24 @@ async function  synchronizeBlockchain(){
     let myLatestBlockNumber  = Node.getLastMinedBlockNonceAndHash()[0]
     if(myLatestBlockNumber != 0)
          myLatestBlockNumber++;
-    console.log(blockMine);
     if(myLatestBlockNumber < blockMine){ 
        clientNodes[nodeNumber].requestData(myLatestBlockNumber)  //Query Data from the Node having highest block 
     }
     console.log("Function 2 Completed")
 }
 
-async function initializeAndStart(){
-  await setP2pNode();
-  await synchronizeBlockchain();
-  await NodeStart();
-}
 
-
-initializeAndStart();
 
 
 async function NodeStart(){
- while(true){
+ 
+     setInterval(async ()=>{
 
    const [block,transactions] = Node.createNewBlock();
    console.log(block)
    if(clientNodes.length == 0){
      Node.commitBlock()
-     continue;
+     return;
    }
        
 
@@ -83,12 +77,12 @@ async function NodeStart(){
                 receiveBlock[2].emit("blockResult",{status:true,message:"Block Verified"})
                 Node.createMinedBlock(receiveBlock[0],receiveBlock[1])
                 Node.disposeBuffer(block.blockNumber)
-                continue;
+                return;
          }else if(receiveBlock[0].blockNumber > block.blockNumber){
                 receiveBlock[2].emit("blockResult",{status:true,message:"Node Not Synchronized"})  //Send Verified Message
                 Node.disposeBuffer(block.blockNumber);   //Dispose Buffer as we are falling behind the network and cannot verify block           
                 await synchronizeBlockchain();   //Synchronize Again
-                continue;
+                return;
          } 
      }
 
@@ -99,13 +93,22 @@ async function NodeStart(){
           await synchronizeBlockchain();
      }   
 
-    await wait(5);   //Wait For 5 seconds
- }
+//     await wait(5);   //Wait For 5 seconds
+},30000);
 }
 
 
+async function initializeAndStart(){
+     await setP2pNode();
+     await synchronizeBlockchain();
+     NodeStart();
+   }
+   
+   
+   initializeAndStart();
+
 
 async function wait(timer){
-     new Promise((resolve)=>{setTimeout(()=>{resolve()},timer*1000)})
+    return new Promise((resolve)=>{setTimeout(()=>{resolve()},timer*1000)})
 }
 
