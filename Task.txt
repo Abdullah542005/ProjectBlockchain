@@ -62,8 +62,8 @@ create Table Block(
         currentblockhash varchar(64) not null unique,
         previousBlockhash varchar(64) not null unique,
         nonce integer not null,
-        timestamp integer not null,
-        blocknumber integer not null,
+        timestamp integer not null unique,
+        blocknumber integer not null unique,
         merkleroot varchar(64) not null unique,
         primary key (currentblockhash)
 );
@@ -76,10 +76,13 @@ Create Table Transactions (
     receiverBlockchainAddress varchar(20) not null,
     value double not null,
     gasfee double not null,
+    timestamp integer not null,
     primary key (transactionHash),
     foreign key (senderBlockchainAddress) references User(blockchainAddress),
     foreign key (receiverBlockchainAddress) references User(blockchainAddress),
     foreign key (blockhash) references Block(currentblockhash)
+    foreign key (timestamp) references Block(timestamp)
+
 )
 
    2-> (Abdullah)
