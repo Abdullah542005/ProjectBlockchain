@@ -22,7 +22,7 @@ export default class TransactionsWrapper {
     totalGas(){
         let gasFee = 0;
         for(let x of this.Transactions)                  
-             gasFee+= x.gasfee;        
+             gasFee+= parseInt(x.gasfee);        
         return gasFee;
     }
 

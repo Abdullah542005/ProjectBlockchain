@@ -3,7 +3,7 @@ import provideInterface from "./Core/Network/JSONRpc.js";
 import { ClientNode, ServerNode } from "./Core/Network/p2pNode.js";
 
 let clientNodes = [];
-let Node = new FullNode("0xa428e6F74718b3f1B3F7881e0c8129bfD45F0Ed5", clientNodes); // Address that will receive the block reward
+let Node = new FullNode("0x10b800853a93519015d2492f165d4a5c220ccbb5", clientNodes); // Address that will receive the block reward
 let myDomain = "http://localhost:3009";
 let bootStrapDomain = "http://localhost:3005"; // The PreSet Node Domain that you will connect first to set up your node
 let myServerNode;

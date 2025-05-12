@@ -147,14 +147,14 @@ export default class FullNode {
     }
 
     getUserTransactions(blockchainAddress) {
-        return this.Database.prepare(`SELECT * FROM Transactions 
-            WHERE senderBlockchainAddress = ? 
-            OR receiverBlockchainAddress = ?`).all(blockchainAddress, blockchainAddress);
+        const Transactions  =  this.Database.prepare(`SELECT * FROM Transactions 
+            WHERE senderBlockchainAddress = ? OR receiverBlockchainAddress = ? `).all(blockchainAddress,blockchainAddress);
+        return Transactions;
     }
 
     getUserBalance(blockchainAddress) {
         const balance = this.Database.prepare("SELECT balance FROM User WHERE blockchainAddress = ?").get(blockchainAddress);
-        return balance;
+        return balance?balance:0;
     }
 
     getUserTransactionNonce(blockchainAddress) {
@@ -162,12 +162,22 @@ export default class FullNode {
         return nonce ? nonce.nonce : 0;
     }
 
+    getUserData(blockchainAddress){
+        const balance = this.getUserBalance(blockchainAddress);
+        const nonce  = this.getUserTransactionNonce(blockchainAddress);
+        return {
+            balance:balance.balance,
+            nonce:nonce,
+            transactions:this.getUserTransactions(blockchainAddress)
+        }
+    }
+
     getAverageGas() {
         if (this.mempool.length == 0)
             return 0;
         let avgGas = 0;
         for (let x of this.mempool)
-            avgGas += x.gasfee;
+            avgGas += parseInt(x.gasfee);
         return avgGas / this.mempool.length;
     }
 
@@ -185,7 +195,7 @@ export default class FullNode {
 
         statement = this.Database.prepare(`SELECT balance FROM User WHERE blockchainAddress = ?`);
         let statement2 = this.Database.prepare(`UPDATE User SET balance = ? WHERE blockchainAddress = ?`);
-        let statement3 = this.Database.prepare('INSERT INTO Transactions (transactionHash, blockHash, senderBlockchainAddress, receiverBlockchainAddress, value, gasfee, transactionNonce) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        let statement3 = this.Database.prepare('INSERT INTO Transactions (transactionHash, blockHash, senderBlockchainAddress, receiverBlockchainAddress, value, gasfee, transactionNonce, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?,?)');
 
         for (let transaction of this.transactionsWrapper.Transactions) {
             console.log(transaction);
@@ -194,11 +204,12 @@ export default class FullNode {
             if (!receiverBalance)
                 this.Database.prepare("INSERT INTO User (blockchainAddress, balance, nonce) VALUES (?, ?, ?)").run(transaction.receiver || transaction.receiverBlockchainAddress, transaction.value, 0);
             else
-                statement2.run(receiverBalance.balance + transaction.value, transaction.receiver || transaction.receiverBlockchainAddress);
-            statement2.run(senderBalance.balance - transaction.value - transaction.gasfee, transaction.sender || transaction.senderBlockchainAddress);
+                statement2.run((parseInt(receiverBalance.balance) + parseInt(transaction.value)), transaction.receiver || transaction.receiverBlockchainAddress);
+            statement2.run((parseInt(senderBalance.balance) - parseInt(transaction.value) - parseInt(transaction.gasfee)), transaction.sender || transaction.senderBlockchainAddress);
 
             statement3.run(ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(transaction))), this.block.currentblockhash,
-                transaction.sender || transaction.senderBlockchainAddress, transaction.receiver || transaction.receiverBlockchainAddress, transaction.value, transaction.gasfee, (transaction.nonce ?? transaction.transactionNonce));
+                transaction.sender || transaction.senderBlockchainAddress, transaction.receiver || transaction.receiverBlockchainAddress, transaction.value, transaction.gasfee, (transaction.nonce ?? transaction.transactionNonce)
+            ,this.block.timestamp);
 
             this.Database.prepare('UPDATE User SET nonce = ? WHERE blockchainAddress = ?').run(transaction.nonce + 1, transaction.sender);
         }
