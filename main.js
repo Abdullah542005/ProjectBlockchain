@@ -87,7 +87,7 @@ async function NodeStart() {
         } else {
             await synchronizeBlockchain();
         }
-    }, 30000);
+    }, 40000);
 }
 
 async function wait(timer) {

@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 
 export default function provideInterface(fnode){
@@ -5,6 +6,7 @@ export default function provideInterface(fnode){
     const app  = express();
 
     app.use(express.json());
+    app.use(cors());
 
     app.listen(4001);
 
@@ -33,6 +35,10 @@ export default function provideInterface(fnode){
             res.json(fnode.getUserBalance(params))
           break;
 
+          case 'getUserData':
+            res.json(fnode.getUserData(params))
+          break;
+
           /*I think we need to introduce a case with getUserTransactionNonce since it exist in FullNode but not in JSONRpc.js
           From line 38-40 I believe this code might exist so added it*/
           case 'getUserTransactionNonce':
@@ -45,10 +51,16 @@ export default function provideInterface(fnode){
 
           case 'sendTransaction':{
            let {status,message} = fnode.addTransactionToMempool(params[0],params[1],params[2])
-           if(!status)
-               res.status(400).json({error:message})
+           if(!status){
+               res.status(400).json({status:status,message:message})
+           }
            else 
-              res.json(message); 
+              res.json({status:status,message:message}); 
+          }
+          break;
+
+          case "getBlockchainInfo":{
+              res.json(fnode.getBlockchainInfo())    
           }
           break;
 

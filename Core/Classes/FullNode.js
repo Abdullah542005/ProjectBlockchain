@@ -30,10 +30,10 @@ export default class FullNode {
             return { status: false, message: "Failed, Unauthorized User" };
         if (!this.verifyTransactionSignature(transaction, signature, publicKey))
             return { status: false, message: "Failed, Invalid Transaction Signature" };
-        if (this.getUserBalance(transaction.sender) < transaction.value + transaction.gasfee)
-            return { status: false, message: "Failed, User Does Not Have Enough Balance" };
         if (transaction.nonce != this.getUserTransactionNonce(transaction.sender))
             return { status: false, message: "Invalid Nonce Or Please Wait for the Previous Transaction To Complete" };
+        if (this.getUserBalance(transaction.sender) < (parseInt(transaction.value) + parseInt(transaction.gasfee)))
+            return { status: false, message: "Failed, User Does Not Have Enough Balance" };
         this.mempool.push(transaction);
         this.mempool = this.mempool.sort((a, b) => b.gasfee - a.gasfee);
         this.broadCastTransaction(transaction, signature, publicKey);
@@ -43,7 +43,7 @@ export default class FullNode {
     async broadCastTransaction(transaction, signature, publicKey) {
         if (this.clientNodes.length > 0)
             this.clientNodes.forEach((node) => {
-                node.broadcastTransaction(transaction, signature, publicKey);
+                node.broadCastTransaction(transaction, signature, publicKey);
             });
     }
 
@@ -56,27 +56,27 @@ export default class FullNode {
         let resolved = false;
 
         this.clientNodes.forEach((node) => {
-            node.broadCastBlock(block, transactions).then(([status, message]) => {
+            node.broadCastBlock(block, transactions).then(({status, message}) => {
                 if (resolved) return;
 
                 if (status) {
                     confirmations++;
                     if (confirmations >= confirmationsNeeded) {
                         resolved = true;
-                        resolve([true, message]);
+                        resolve({status:true, message:message});
                     }
                 } else {
                     rejections++;
                     if ((this.clientNodes.length - rejections) < confirmationsNeeded) {
                         resolved = true;
-                        resolve([false, message]);
+                        resolve({status:false, message:message});
                     }
                 }
             }).catch((err) => {
                 rejections++;
                 if (!resolved && (this.clientNodes.length - rejections) < confirmationsNeeded) {
                     resolved = true;
-                    resolve([false, "Node error or unresponsive"]);
+                    resolve({status:false, message:"Node error or unresponsive"});
                 }
             });
         });
@@ -89,6 +89,7 @@ export default class FullNode {
             req.socket.emit("blockResult", { status: false, message: "synchronize" });
             console.log("Request Disposed");
         });
+        this.bufferReceivedBlock = [];
     }
 
     verifyTransactionSignature(transaction, signature, publicKey) {
@@ -172,6 +173,32 @@ export default class FullNode {
         }
     }
 
+
+    getBlockchainInfo(){
+        const blocknumber = this.Database.prepare(`SELECT MAX(blocknumber) AS number FROM Block`).get();
+        let blocksToFetch  =    parseInt(blocknumber.number) - 10;
+        if(blocksToFetch<0)
+              blocksToFetch = 0;
+        const blocks   = this.Database.prepare(`Select * from Block where blocknumber >= ?`).all(blocksToFetch)
+        const address = "0x0000000000000000000000000000000000000000";
+        const remainingTokens  = this.Database.prepare("Select balance as balance from user where blockchainAddress =  ? ").get(address)    
+        let tokensMined  = 10**8 - parseInt(remainingTokens.balance);
+        return  { 
+             AvgGasFee: this.getAverageGas(),
+             TotalTransactions:this.getTransactionCount(),
+             MempoolTransactions:this.mempool,
+             LatestBlocksMined:blocks,
+             blocksMined:blocknumber.number,
+             TotaltokensMined:tokensMined
+        }
+    }
+
+
+    getTransactionCount(){
+        let statement   =  this.Database.prepare("Select count(*) as count from Transactions").get();
+        return statement.count;
+    }
+
     getAverageGas() {
         if (this.mempool.length == 0)
             return 0;
@@ -213,8 +240,6 @@ export default class FullNode {
 
             this.Database.prepare('UPDATE User SET nonce = ? WHERE blockchainAddress = ?').run(transaction.nonce + 1, transaction.sender);
         }
-
-        this.Database.prepare('UPDATE User SET nonce = ? WHERE blockchainAddress = ?').run(this.getUserTransactionNonce(ZeroAddress) + 1, ZeroAddress);
 
         const hashes = new Set(this.transactionsWrapper.Transactions.map((transaction) => ethers.sha256(ethers.toUtf8Bytes(JSON.stringify(transaction)))));
         this.mempool = this.mempool.filter((memPoolTransaction) =>

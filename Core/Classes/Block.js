@@ -18,7 +18,7 @@ export default class Block {
 
     mineBlock(merkleroot) {
         let Block_Data = this.blocknumber + this.previousBlockhash + this.timestamp + merkleroot + this.nonce;
-        let difficulty_Target = 2n ** 236n;
+        let difficulty_Target = 2n ** 240n;
         let hash = ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data)));
         while (BigInt(hash) > difficulty_Target) {
             this.nonce++;
@@ -33,7 +33,7 @@ export default class Block {
     verifyBlock() {
         let Block_Data = this.blocknumber + this.previousBlockhash + this.timestamp + this.merkleroot + this.nonce;
         const hash = BigInt(ethers.sha256(toUtf8Bytes(JSON.stringify(Block_Data))));
-        return hash < 2n ** 236n;
+        return hash < 2n ** 240n;
     }
 
     toObject() {
