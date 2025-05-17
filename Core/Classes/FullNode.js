@@ -26,19 +26,33 @@ export default class FullNode {
     }
 
     addTransactionToMempool(transaction, signature, publicKey) {
-        if ("0x" + publicKey.slice(-40) != transaction.sender)
-            return { status: false, message: "Failed, Unauthorized User" };
-        if (!this.verifyTransactionSignature(transaction, signature, publicKey))
-            return { status: false, message: "Failed, Invalid Transaction Signature" };
-        if (transaction.nonce != this.getUserTransactionNonce(transaction.sender))
-            return { status: false, message: "Invalid Nonce Or Please Wait for the Previous Transaction To Complete" };
-        if (this.getUserBalance(transaction.sender) < (parseInt(transaction.value) + parseInt(transaction.gasfee)))
-            return { status: false, message: "Failed, User Does Not Have Enough Balance" };
-        this.mempool.push(transaction);
-        this.mempool = this.mempool.sort((a, b) => b.gasfee - a.gasfee);
-        this.broadCastTransaction(transaction, signature, publicKey);
-        return { status: true, message: "Transaction Added To Mempool" };
-    }
+    if ("0x" + publicKey.slice(-40) !== transaction.sender)
+        return { status: false, message: "Failed, Unauthorized User" };
+    if (!this.verifyTransactionSignature(transaction, signature, publicKey))
+        return { status: false, message: "Failed, Invalid Transaction Signature" };
+    const sender = transaction.sender;
+    const txNonce = transaction.nonce;
+    const currentNonce = this.getUserTransactionNonce(sender);
+    const pendingTxs = this.mempool.filter(tx => tx.sender === sender);
+    const isNonceUsed = pendingTxs.some(tx => tx.nonce === txNonce);
+    if (isNonceUsed)
+        return { status: false, message: "Failed, Duplicate Nonce" };
+    const expectedNonce = currentNonce + pendingTxs.length;
+    if (txNonce !== expectedNonce)
+        return {
+            status: false,
+            message: `Failed, Nonce must be exactly ${expectedNonce}. Current: ${txNonce}`
+        };
+    const chainBalance = parseInt(this.getUserBalance(sender).balance);
+    const pendingCost = pendingTxs.reduce((sum, tx) => sum + parseInt(tx.value) + parseInt(tx.gasfee), 0);
+    const totalRequired = parseInt(transaction.value) + parseInt(transaction.gasfee);
+    if ((chainBalance - pendingCost) < totalRequired)
+        return { status: false, message: "Failed, Not Enough Balance After Pending Transactions" };
+    this.mempool.push(transaction);
+    this.mempool = this.mempool.sort((a, b) => b.gasfee - a.gasfee);
+    this.broadCastTransaction(transaction, signature, publicKey);
+    return { status: true, message: "Transaction Added To Mempool" };
+}
 
     async broadCastTransaction(transaction, signature, publicKey) {
         if (this.clientNodes.length > 0)
